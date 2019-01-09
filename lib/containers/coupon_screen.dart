@@ -95,7 +95,7 @@ class _CouponScreenState extends State<CouponScreen> {
 
         Future _addExpireEvent4Coupon(String calendarId, List<Coupon> coupons) async {
           try {
-            coupons.forEach((coupon) async {
+            await Future.forEach(coupons, (coupon) async {
               var event = FlutterCalendarUtil.Event(
                 calendarId,
                 title: coupon.name + ' Expire !!!',
@@ -112,7 +112,7 @@ class _CouponScreenState extends State<CouponScreen> {
 
         Future _addStartEvent4Coupon(String calendarId, List<Coupon> coupons) async {
           try {
-            coupons.forEach((coupon) async {
+            await Future.forEach(coupons, (coupon) async {
               var event = FlutterCalendarUtil.Event(
                 calendarId,
                 title: coupon.name + ' Start !!!',
@@ -127,7 +127,7 @@ class _CouponScreenState extends State<CouponScreen> {
           }
         }
 
-        void _refreshCalendarEvent() async {
+        Future _refreshCalendarEvent() async {
           try {
             var permissionsGranted = await _flutterCalendarUtil.hasPermissions();
             if (permissionsGranted.isSuccess && !permissionsGranted.data) {
@@ -148,7 +148,6 @@ class _CouponScreenState extends State<CouponScreen> {
 
             print('Create events for ${viewModel.futureCoupons.length} future coupons');
             await _addStartEvent4Coupon(calendarIdResult.data, viewModel.futureCoupons);
-            
           } on PlatformException catch (e) {
             print(e);
           }
@@ -222,8 +221,22 @@ class _CouponScreenState extends State<CouponScreen> {
                 heroTag: null,
                 mini: true,
                 child: Icon(Icons.refresh),
-                onPressed: () {
-                  _refreshCalendarEvent();
+                onPressed: () async {
+                  Scaffold.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: <Widget>[
+                          CircularProgressIndicator(),
+                          Text("Updating device calendar..."),
+                        ],
+                      ),
+                    )
+                  );
+
+                  await _refreshCalendarEvent();
+
+                  await Future.delayed(Duration(seconds: 3));
+                  Scaffold.of(context).removeCurrentSnackBar();
                 },
               ),
             ),
