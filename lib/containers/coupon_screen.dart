@@ -225,6 +225,7 @@ class _CouponScreenState extends State<CouponScreen> {
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
                       content: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           CircularProgressIndicator(),
                           Text("Updating device calendar..."),
