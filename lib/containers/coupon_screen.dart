@@ -3,6 +3,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:intl/intl.dart';
+import 'package:unicorndial/unicorndial.dart';
+
+import 'package:flutter/services.dart';
+import 'package:flutter_calendar_util/flutter_calendar_util.dart' as FlutterCalendarUtil;
 
 import '../models/models.dart';
 import '../selectors/selectors.dart';
@@ -17,10 +21,13 @@ class CouponScreen extends StatefulWidget {
   _CouponScreenState createState() => _CouponScreenState();
 }
 
+const CALENDAR_NAME = "GoShopping";
+
 class _CouponScreenState extends State<CouponScreen> {
   final _dateFormater = new DateFormat('yyyy-MM-dd');
   ScrollController _scrollController = ScrollController();
   bool _showFAB = true;
+  FlutterCalendarUtil.FlutterCalendarUtil _flutterCalendarUtil = new FlutterCalendarUtil.FlutterCalendarUtil();
 
   void _scrollListener() {
     if (_scrollController.position.userScrollDirection ==
@@ -68,6 +75,86 @@ class _CouponScreenState extends State<CouponScreen> {
           });
         }
 
+        void _deleteCalendar() async {
+          try {
+            var permissionsGranted = await _flutterCalendarUtil.hasPermissions();
+            if (permissionsGranted.isSuccess && !permissionsGranted.data) {
+              permissionsGranted = await _flutterCalendarUtil.requestPermissions();
+              if (!permissionsGranted.isSuccess || !permissionsGranted.data) {
+                return;
+              }
+            }
+
+            var deleteResult = await _flutterCalendarUtil.deleteCalendar(CALENDAR_NAME);
+            print('Delete calendar result: ${deleteResult.data}');
+
+          } on PlatformException catch (e) {
+            print(e);
+          }
+        }
+
+        Future _addExpireEvent4Coupon(String calendarId, List<Coupon> coupons) async {
+          try {
+            coupons.forEach((coupon) async {
+              var event = FlutterCalendarUtil.Event(
+                calendarId,
+                title: coupon.name + ' Expire !!!',
+                start: coupon.endDate,
+                end: coupon.endDate,
+              );
+              var createResult = await _flutterCalendarUtil.createOrUpdateEvent(event);
+              print('Expirer Event[${createResult.data}] for coupon ${coupon.name} added');
+            });
+          } on PlatformException catch (e) {
+            print(e);
+          }
+        }
+
+        Future _addStartEvent4Coupon(String calendarId, List<Coupon> coupons) async {
+          try {
+            coupons.forEach((coupon) async {
+              var event = FlutterCalendarUtil.Event(
+                calendarId,
+                title: coupon.name + ' Start !!!',
+                start: coupon.startDate,
+                end: coupon.startDate,
+              );
+              var createResult = await _flutterCalendarUtil.createOrUpdateEvent(event);
+              print('Start Event[${createResult.data}] for coupon ${coupon.name} added');
+            });
+          } on PlatformException catch (e) {
+            print(e);
+          }
+        }
+
+        void _refreshCalendarEvent() async {
+          try {
+            var permissionsGranted = await _flutterCalendarUtil.hasPermissions();
+            if (permissionsGranted.isSuccess && !permissionsGranted.data) {
+              permissionsGranted = await _flutterCalendarUtil.requestPermissions();
+              if (!permissionsGranted.isSuccess || !permissionsGranted.data) {
+                return;
+              }
+            }
+
+            var deleteResult = await _flutterCalendarUtil.deleteCalendar(CALENDAR_NAME);
+            print('Delete calendar result: ${deleteResult.data}');
+
+            var calendarIdResult = await _flutterCalendarUtil.createCalendar(CALENDAR_NAME);
+            print('New Calendar id: [${calendarIdResult.data}]');
+
+            print('Create events for ${viewModel.currentCoupons.length} current coupons');
+            await _addExpireEvent4Coupon(calendarIdResult.data, viewModel.currentCoupons);
+
+            print('Create events for ${viewModel.futureCoupons.length} future coupons');
+            await _addStartEvent4Coupon(calendarIdResult.data, viewModel.futureCoupons);
+            
+          } on PlatformException catch (e) {
+            print(e);
+          }
+
+        }
+
         final appBar = AppBar(
           title: Text('Today: ' + _dateFormater.format(DateTime.now())),
         );
@@ -111,17 +198,53 @@ class _CouponScreenState extends State<CouponScreen> {
           ],
         );
 
+        final fabAdd = FloatingActionButton(
+          heroTag: null,
+          onPressed: _addCoupon,
+          child: Icon(Icons.add),
+        );
+
+        final fabCalendar = UnicornDialer(
+          parentButton: Icon(Icons.calendar_today),
+          childButtons: <UnicornButton>[
+            UnicornButton(
+              currentButton: FloatingActionButton(
+                heroTag: null,
+                mini: true,
+                child: Icon(Icons.delete),
+                onPressed: () {
+                  _deleteCalendar();
+                },
+              ),
+            ),
+            UnicornButton(
+              currentButton: FloatingActionButton(
+                heroTag: null,
+                mini: true,
+                child: Icon(Icons.refresh),
+                onPressed: () {
+                  _refreshCalendarEvent();
+                },
+              ),
+            ),
+          ],
+        );
+
+        final fab = Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            fabAdd,
+            fabCalendar,
+          ],
+        );
+
         return Scaffold(
           appBar: appBar,
           body: body,
-          floatingActionButton: _showFAB
-              ? FloatingActionButton(
-                  onPressed: _addCoupon,
-                  child: Icon(Icons.add),
-                )
-              : Container(),
+          floatingActionButton: _showFAB ? fab : Container(),
           floatingActionButtonLocation:
-              FloatingActionButtonLocation.endFloat,
+              FloatingActionButtonLocation.centerFloat,
         );
       },
     );

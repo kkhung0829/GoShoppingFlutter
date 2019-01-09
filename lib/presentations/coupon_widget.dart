@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simple_moment/simple_moment.dart';
 import 'package:intl/intl.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 import '../models/models.dart';
 import 'coupon_detail_widget.dart';
@@ -53,7 +54,7 @@ class CouponWidget extends StatelessWidget {
     }
 
     final details = ListTile(
-      title: Text(coupon.name),
+      title: AutoSizeText(coupon.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(subTitleStr),
     );
 

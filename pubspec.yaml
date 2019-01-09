@@ -31,7 +31,12 @@ dependencies:
   redux_persist_flutter: ^0.8.0
   simple_moment: ^1.0.2
   intl: ^0.15.7
+  auto_size_text: ^0.3.0
+  unicorndial: ^1.1.5
   
+  flutter_calendar_util:
+    path: ../flutter_calendar_util
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter

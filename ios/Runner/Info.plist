@@ -47,5 +47,7 @@
 	<string>For taking shopping item photo</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For taking shopping item photo</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>For accessing device calendar</string>
 </dict>
 </plist>
