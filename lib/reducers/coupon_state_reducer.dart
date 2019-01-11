@@ -7,6 +7,7 @@ final couponStateReducer = combineReducers<CouponState>([
   TypedReducer<CouponState, DelCouponAction>(_delCoupon),
   TypedReducer<CouponState, UpdateCouponAction>(_updateCoupon),
   TypedReducer<CouponState, DelAllCouponsAction>(_delAllCoupon),
+  TypedReducer<CouponState, SyncCouponStateFromCloudAction>(_syncCouponStateFromCloud),
 ]);
 
 CouponState _addCoupon(CouponState state, AddCouponAction action) =>
@@ -33,3 +34,6 @@ CouponState _delAllCoupon(CouponState state, DelAllCouponsAction action) =>
   state.copyWith(
     coupons: const [],
   );
+
+CouponState _syncCouponStateFromCloud(CouponState state, SyncCouponStateFromCloudAction action) =>
+  action.state;

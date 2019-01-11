@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import '../models/models.dart';
-import 'coupon_detail_widget.dart';
+import 'coupon_detail_screen.dart';
 
 enum CouponType { expired, current, future }
 typedef CouponWidget_OnUpdate = void Function(Coupon coupon);
@@ -65,7 +65,7 @@ class CouponWidget extends StatelessWidget {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) =>
-            CouponDetailWidget(coupon: coupon),
+            CouponDetailScreen(coupon: coupon),
         ).then((Coupon updatedCoupon) {
           if (updatedCoupon != null) {
             onUpdate(updatedCoupon);

@@ -33,15 +33,18 @@ dependencies:
   intl: ^0.15.7
   auto_size_text: ^0.3.0
   unicorndial: ^1.1.5
+  flutter_inappbrowser: ^0.5.51
+  http: ^0.12.0+1
   
   flutter_calendar_util:
     path: ../flutter_calendar_util
-    
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^1.0.0
   json_serializable: ^2.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

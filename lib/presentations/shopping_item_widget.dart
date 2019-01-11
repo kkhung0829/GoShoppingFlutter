@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/models.dart';
 import 'hero_dialog_route.dart';
-import 'shopping_item_detail_widget.dart';
+import 'shopping_item_detail_screen.dart';
 
 typedef ShoppingItemWidget_OnIncNumUnit = void Function(ShoppingItem item);
 typedef ShoppingItemWidget_OnDecNumUnit = void Function(ShoppingItem item);
@@ -98,7 +98,7 @@ class ShoppingItemWidget extends StatelessWidget {
             barrierDismissible: false,
             builder: (BuildContext context) =>
               Center(
-                child: ShoppingItemDetailWidget(item: item),
+                child: ShoppingItemDetailScreen(item: item),
               ),
           ),
         ).then((ShoppingItem updatedItem) {

@@ -28,3 +28,11 @@ class UpdateCouponAction {
 }
 
 class DelAllCouponsAction {}
+
+class SyncCouponStateFromCloudAction {
+  final CouponState state;
+
+  SyncCouponStateFromCloudAction({
+    @required this.state,
+  });
+}

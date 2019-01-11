@@ -5,11 +5,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/models.dart';
 
-class ShoppingItemDetailWidget extends StatefulWidget {
+class ShoppingItemDetailScreen extends StatefulWidget {
   final ShoppingItem item;
   final bool isEdit;
 
-  ShoppingItemDetailWidget({
+  ShoppingItemDetailScreen({
     Key key,
     ShoppingItem item,
   })  : this.isEdit = (item != null),
@@ -17,11 +17,11 @@ class ShoppingItemDetailWidget extends StatefulWidget {
         super(key: key);
 
   @override
-  _ShoppingItemDetailWidgetState createState() =>
-      _ShoppingItemDetailWidgetState();
+  _ShoppingItemDetailScreenState createState() =>
+      _ShoppingItemDetailScreenState();
 }
 
-class _ShoppingItemDetailWidgetState extends State<ShoppingItemDetailWidget> {
+class _ShoppingItemDetailScreenState extends State<ShoppingItemDetailScreen> {
   TextEditingController _tcUnitPrice;
   String _imageFilePath;
 

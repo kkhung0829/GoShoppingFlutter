@@ -4,7 +4,6 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:intl/intl.dart';
 import 'package:unicorndial/unicorndial.dart';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_calendar_util/flutter_calendar_util.dart' as FlutterCalendarUtil;
 
@@ -22,6 +21,8 @@ class CouponScreen extends StatefulWidget {
 }
 
 const CALENDAR_NAME = "GoShopping";
+const DROPBOX_APP_KEY = "9ov0rdwqdhqrmxv";
+const DROPBOX_COUPON_STATE_FILE_PATH = '/couponState.flutter.json';
 
 class _CouponScreenState extends State<CouponScreen> {
   final _dateFormater = new DateFormat('yyyy-MM-dd');
@@ -67,7 +68,7 @@ class _CouponScreenState extends State<CouponScreen> {
           showDialog<Coupon>(
             context: context,
             barrierDismissible: false,
-            builder: (BuildContext context) => CouponDetailWidget(),
+            builder: (BuildContext context) => CouponDetailScreen(),
           ).then((Coupon newCoupon) {
             if (newCoupon != null) {
               viewModel.onAddCoupon(newCoupon);
@@ -75,7 +76,7 @@ class _CouponScreenState extends State<CouponScreen> {
           });
         }
 
-        void _deleteCalendar() async {
+        Future _deleteCalendar() async {
           try {
             var permissionsGranted = await _flutterCalendarUtil.hasPermissions();
             if (permissionsGranted.isSuccess && !permissionsGranted.data) {
@@ -152,6 +153,31 @@ class _CouponScreenState extends State<CouponScreen> {
             print(e);
           }
 
+        }
+
+        void _downloadCouponsFromDropbox() {
+          DropboxHelper.login(DROPBOX_APP_KEY)
+            .then((String accessToken) async {
+              if (accessToken != null) {
+                CouponState state = CouponState.fromJson(
+                  await DropboxHelper.downloadJSON(accessToken, DROPBOX_COUPON_STATE_FILE_PATH)
+                );
+
+                viewModel.onSyncCouponStateFromCloud(state);
+              }
+            });
+        }
+
+        void _uploadCouponsToDropbox() {
+          DropboxHelper.login(DROPBOX_APP_KEY)
+            .then((String accessToken) async {
+              if (accessToken != null) {
+                await DropboxHelper.uploadJSON(
+                  accessToken,
+                  DROPBOX_COUPON_STATE_FILE_PATH,
+                  viewModel.couponState.toJson());
+              }
+            });
         }
 
         final appBar = AppBar(
@@ -244,12 +270,39 @@ class _CouponScreenState extends State<CouponScreen> {
           ],
         );
 
+        final fabDropbox = UnicornDialer(
+          parentButton: Icon(Icons.sync),
+          childButtons: <UnicornButton>[
+            UnicornButton(
+              currentButton: FloatingActionButton(
+                heroTag: null,
+                mini: true,
+                child: Icon(Icons.cloud_upload),
+                onPressed: () {
+                  _uploadCouponsToDropbox();
+                },
+              ),
+            ),
+            UnicornButton(
+              currentButton: FloatingActionButton(
+                heroTag: null,
+                mini: true,
+                child: Icon(Icons.cloud_download),
+                onPressed: () {
+                  _downloadCouponsFromDropbox();
+                },
+              ),
+            ),
+          ],
+        );
+
         final fab = Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
             fabAdd,
             fabCalendar,
+            fabDropbox,
           ],
         );
 
@@ -266,6 +319,7 @@ class _CouponScreenState extends State<CouponScreen> {
 }
 
 class _ViewModel {
+  final CouponState couponState;
   final List<Coupon> expiredCoupons;
   final List<Coupon> currentCoupons;
   final List<Coupon> futureCoupons;
@@ -273,8 +327,10 @@ class _ViewModel {
   final Function(String) onDelCoupon;
   final Function(String, Coupon) onUpdateCoupon;
   final Function() onDelAllCoupon;
+  final Function(CouponState) onSyncCouponStateFromCloud;
 
   _ViewModel({
+    this.couponState,
     this.expiredCoupons,
     this.currentCoupons,
     this.futureCoupons,
@@ -282,10 +338,12 @@ class _ViewModel {
     this.onDelCoupon,
     this.onUpdateCoupon,
     this.onDelAllCoupon,
+    this.onSyncCouponStateFromCloud,
   });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return new _ViewModel(
+        couponState: couponStateSelector(store.state),
         expiredCoupons: expiredCouponsSelector(store.state),
         currentCoupons: currentCouponsSelector(store.state),
         futureCoupons: futureCouponsSelector(store.state),
@@ -307,6 +365,9 @@ class _ViewModel {
         },
         onDelAllCoupon: () {
           store.dispatch(DelAllCouponsAction());
+        },
+        onSyncCouponStateFromCloud: (CouponState state) {
+          store.dispatch(SyncCouponStateFromCloudAction(state: state));
         });
   }
 }

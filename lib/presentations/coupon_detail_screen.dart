@@ -7,11 +7,11 @@ final _now = DateTime.now();
 final _nowDate = DateTime(_now.year, _now.month, _now.day);
 final _tomorrowDate = _nowDate.add(Duration(days: 1));
 
-class CouponDetailWidget extends StatefulWidget {
+class CouponDetailScreen extends StatefulWidget {
   final Coupon coupon;
   final bool isEdit;
 
-  CouponDetailWidget({
+  CouponDetailScreen({
     Key key,
     Coupon coupon,
   })  : this.isEdit = (coupon != null),
@@ -23,10 +23,10 @@ class CouponDetailWidget extends StatefulWidget {
         super(key: key);
 
   @override
-  _CouponDetailWidgetState createState() => _CouponDetailWidgetState();
+  _CouponDetailScreenState createState() => _CouponDetailScreenState();
 }
 
-class _CouponDetailWidgetState extends State<CouponDetailWidget> {
+class _CouponDetailScreenState extends State<CouponDetailScreen> {
   final dateFormater = new DateFormat('yyyy-MM-dd');
 
   TextEditingController _tcName;

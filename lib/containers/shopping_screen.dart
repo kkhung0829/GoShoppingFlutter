@@ -58,7 +58,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           showDialog<ShoppingItem>(
             context: context,
             barrierDismissible: false,
-            builder: (BuildContext context) => ShoppingItemDetailWidget(),
+            builder: (BuildContext context) => ShoppingItemDetailScreen(),
           ).then((ShoppingItem newItem) {
             if (newItem != null) {
               viewModel.onAddShoppingItem(newItem);
