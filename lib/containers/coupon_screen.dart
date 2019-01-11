@@ -155,29 +155,48 @@ class _CouponScreenState extends State<CouponScreen> {
 
         }
 
-        void _downloadCouponsFromDropbox() {
-          DropboxHelper.login(DROPBOX_APP_KEY)
-            .then((String accessToken) async {
-              if (accessToken != null) {
-                CouponState state = CouponState.fromJson(
-                  await DropboxHelper.downloadJSON(accessToken, DROPBOX_COUPON_STATE_FILE_PATH)
-                );
+        void _downloadCouponsFromDropbox() async {
+          try {
+            String accessToken = viewModel.dropboxAccessToken;
 
-                viewModel.onSyncCouponStateFromCloud(state);
+            if (accessToken == null || accessToken.isEmpty) {
+              accessToken = await DropboxHelper.login(DROPBOX_APP_KEY);
+              if (accessToken != null) {
+                viewModel.onSetDropboxAccessToken(accessToken);
               }
-            });
+            }
+            if ((accessToken != null) && accessToken.isNotEmpty) {
+                  CouponState state = CouponState.fromJson(
+                    await DropboxHelper.downloadJSON(accessToken, DROPBOX_COUPON_STATE_FILE_PATH)
+                  );
+
+                  viewModel.onSyncCouponStateFromCloud(state);
+            }
+          } catch (e) {
+            print(e);
+          }
         }
 
-        void _uploadCouponsToDropbox() {
-          DropboxHelper.login(DROPBOX_APP_KEY)
-            .then((String accessToken) async {
+        void _uploadCouponsToDropbox() async {
+          try {
+            String accessToken = viewModel.dropboxAccessToken;
+
+            if (accessToken == null || accessToken.isEmpty) {
+              accessToken = await DropboxHelper.login(DROPBOX_APP_KEY);
               if (accessToken != null) {
-                await DropboxHelper.uploadJSON(
-                  accessToken,
-                  DROPBOX_COUPON_STATE_FILE_PATH,
-                  viewModel.couponState.toJson());
+                viewModel.onSetDropboxAccessToken(accessToken);
               }
-            });
+            }
+            if ((accessToken != null) && accessToken.isNotEmpty) {
+              await DropboxHelper.uploadJSON(
+                accessToken,
+                DROPBOX_COUPON_STATE_FILE_PATH,
+                viewModel.couponState.toJson()
+              );
+            }
+          } catch (e) {
+            print(e);
+          }
         }
 
         final appBar = AppBar(
@@ -319,34 +338,40 @@ class _CouponScreenState extends State<CouponScreen> {
 }
 
 class _ViewModel {
-  final CouponState couponState;
   final List<Coupon> expiredCoupons;
   final List<Coupon> currentCoupons;
   final List<Coupon> futureCoupons;
+  final CouponState couponState;
+  final String      dropboxAccessToken;
+
   final Function(Coupon) onAddCoupon;
   final Function(String) onDelCoupon;
   final Function(String, Coupon) onUpdateCoupon;
   final Function() onDelAllCoupon;
   final Function(CouponState) onSyncCouponStateFromCloud;
+  final Function(String) onSetDropboxAccessToken;
 
   _ViewModel({
-    this.couponState,
     this.expiredCoupons,
     this.currentCoupons,
     this.futureCoupons,
+    this.couponState,
+    this.dropboxAccessToken,
     this.onAddCoupon,
     this.onDelCoupon,
     this.onUpdateCoupon,
     this.onDelAllCoupon,
     this.onSyncCouponStateFromCloud,
+    this.onSetDropboxAccessToken,
   });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return new _ViewModel(
-        couponState: couponStateSelector(store.state),
         expiredCoupons: expiredCouponsSelector(store.state),
         currentCoupons: currentCouponsSelector(store.state),
         futureCoupons: futureCouponsSelector(store.state),
+        couponState: couponStateSelector(store.state),
+        dropboxAccessToken: dropboxAccessTokenSelector(store.state),
         onAddCoupon: (Coupon coupon) {
           store.dispatch(AddCouponAction(
             coupon: coupon,
@@ -368,6 +393,9 @@ class _ViewModel {
         },
         onSyncCouponStateFromCloud: (CouponState state) {
           store.dispatch(SyncCouponStateFromCloudAction(state: state));
+        },
+        onSetDropboxAccessToken: (String accessToken) {
+          store.dispatch(SetDropboxAccessTokenAction(accessToken: accessToken));
         });
   }
 }

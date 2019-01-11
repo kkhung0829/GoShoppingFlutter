@@ -14,10 +14,15 @@ AppState _$AppStateFromJson(Map<String, dynamic> json) {
               json['shoppingState'] as Map<String, dynamic>),
       couponState: json['couponState'] == null
           ? null
-          : CouponState.fromJson(json['couponState'] as Map<String, dynamic>));
+          : CouponState.fromJson(json['couponState'] as Map<String, dynamic>),
+      dropboxState: json['dropboxState'] == null
+          ? null
+          : DropboxState.fromJson(
+              json['dropboxState'] as Map<String, dynamic>));
 }
 
 Map<String, dynamic> _$AppStateToJson(AppState instance) => <String, dynamic>{
       'shoppingState': instance.shoppingState,
-      'couponState': instance.couponState
+      'couponState': instance.couponState,
+      'dropboxState': instance.dropboxState
     };
